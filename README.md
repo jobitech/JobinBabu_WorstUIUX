@@ -1,4 +1,4 @@
-# The Aggressively Annoying UI: Maximum Chaos Edition (TTS Removed)
+# The Aggressively Annoying UI: Maximum Chaos Edition
 
 This is a proof-of-concept web interface designed to create maximum user frustration through a series of hostile and counter-intuitive design choices. It utilizes modern web technologies (HTML, Tailwind CSS, JavaScript) to deliver a maximally aggressive and chaotic user experience without relying on external APIs for audio.
 
