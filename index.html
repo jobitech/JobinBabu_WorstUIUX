@@ -1,0 +1,848 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Annoyingly Hostile UI (TTS Controlled) - MAXIMUM CHAOS</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom Font & Background */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0d0d1a; /* Very dark background */
+            color: #d1d5db; /* Light gray for main text */
+            /* Custom cursor replacement with skull emoji (JS will change this) */
+            cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 100 100"><text x="0" y="90" style="font-size: 80px;">💀</text></svg>') 15 15, auto;
+            min-height: 200vh; 
+            overflow-x: hidden;
+            overflow-y: hidden; /* Hide default scrollbars to manage custom scroll inversion */
+            transition: transform 0.05s, filter 0.05s; /* For Performance Stutter Chaos */
+        }
+
+        /* --- GLITCH MULTIVERSE UI STYLES --- */
+
+        /* 1. RGB Glitch Text Effect */
+        .glitch-text {
+            animation: glitch-shadow 1s infinite alternate;
+            color: #10b981; /* Neon green base */
+        }
+
+        @keyframes glitch-shadow {
+            0% {
+                text-shadow: 2px 0 0 #ef4444, -2px 0 0 #3b82f6; /* Red/Blue shift */
+                transform: translate(0, 0);
+            }
+            33% {
+                text-shadow: -1px 0 0 #f43f5e, 1px 0 0 #8b5cf6; /* Pink/Purple shift */
+                transform: translate(-1px, 1px);
+            }
+            66% {
+                text-shadow: 3px 0 0 #10b981, -3px 0 0 #facc15; /* Green/Yellow shift */
+                transform: translate(1px, -1px);
+            }
+            100% {
+                text-shadow: 0 0 5px rgba(255, 255, 255, 0.5), 0 0 10px rgba(16, 185, 129, 0.8);
+                transform: translate(0, 0);
+            }
+        }
+
+        /* 2. Static Noise Background Overlay */
+        .static-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1000;
+            opacity: 0.1;
+            /* Small black/white pattern for static effect */
+            background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUAAAAMAAAADCAMAAABsK7yNAAAABlBMVEUAAAAAAAChy7WsAAAAAXRSTlMAQObYZgAAABFJREFUeJxjYIACRiYmRmYAAAHeABDn/FisAAAAAElFTkSuQmCC");
+            animation: static-shift 0.1s infinite steps(1);
+        }
+
+        @keyframes static-shift {
+            0% { background-position: 0 0; }
+            100% { background-position: 100% 100%; }
+        }
+
+        /* 3. The Fleeing Button Base Style */
+        #fleeing-button {
+            transition: transform 0.1s ease-out, background-color 0.1s;
+            will-change: transform;
+            /* Custom cursor for the fleeing button */
+            cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 100 100"><text x="0" y="90" style="font-size: 80px;">🚫</text></svg>') 15 15, not-allowed;
+            border: 2px solid #f97316;
+            box-shadow: 0 0 15px #f97316, inset 0 0 5px #f97316;
+        }
+
+        /* 4. Glitchy Input Field */
+        .glitch-input {
+            border: 2px solid #8b5cf6;
+            box-shadow: 0 0 10px #8b5cf6;
+            background-color: rgba(139, 92, 246, 0.1);
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+        .glitch-input:focus {
+            outline: none;
+            border-color: #ec4899;
+            box-shadow: 0 0 15px #ec4899, inset 0 0 5px #ec4899;
+        }
+        
+        /* Custom range styling for the inverted slider */
+        .inverted-range-track {
+             /* Custom track color to show instability */
+            background-color: #4f46e5;
+        }
+
+        /* Container for layout shifting */
+        #main-container {
+            position: relative; /* Allows child elements to be positioned relative to it */
+            transition: transform 0.1s ease-out, width 1.5s, border-color 0.05s; /* Smooth shifting, and quick color transition */
+        }
+        
+        /* 17. Text Corruption Effect */
+        .chaotic-text-effect {
+            animation: text-shake 0.1s infinite alternate;
+            filter: blur(0.5px);
+            text-shadow: 1px 0 0 #f00, -1px 0 0 #00f;
+        }
+        @keyframes text-shake {
+            from { transform: translateX(0.1px); }
+            to { transform: translateX(-0.1px); }
+        }
+
+
+        /* Overlay to force user interaction and unlock audio */
+        #start-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.95);
+            z-index: 1010;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            opacity: 1;
+            transition: opacity 1s ease-out, visibility 1s;
+        }
+        .start-button {
+            animation: pulse 1.5s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.7); }
+            50% { transform: scale(1.05); box-shadow: 0 0 15px 10px rgba(255, 255, 255, 0); }
+        }
+
+        /* Style for link hover chaos */
+        .link-chaos:hover {
+            position: relative; /* Allows transform to be used relative to container */
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8 flex flex-col items-center">
+    
+    <div id="start-overlay">
+        <h2 class="text-4xl text-red-500 font-bold mb-8 glitch-text">ACCESS DENIED. USER INTERVENTION REQUIRED.</h2>
+        <button id="start-button" class="start-button px-10 py-5 bg-red-600 text-white font-extrabold text-2xl rounded-xl shadow-2xl hover:bg-red-700 transition duration-300 transform active:scale-95">
+            // BEGIN HOSTILE SIMULATION //
+        </button>
+        <p class="mt-4 text-gray-400 text-sm">A click is required to bypass browser security protocols and enable sound.</p>
+    </div>
+    <div class="static-overlay"></div>
+    
+    <div id="image-glitch" class="fixed top-0 left-0 w-full h-full z-1010 pointer-events-none hidden transition-opacity duration-50">
+        <img src="YOUR_IMAGE_URL" class="w-full h-full object-cover opacity-10" alt="Data Corruption">
+    </div>
+    <input type="text" id="useless-input" style="position: absolute; left: -9999px;" value="TARGET LOCKED">
+
+    <div id="main-container" class="max-w-4xl w-full p-6 md:p-12 rounded-xl shadow-2xl backdrop-blur-sm bg-gray-900/90 border-2 border-green-400 opacity-0 transition-opacity duration-500">
+        <h1 class="text-4xl md:text-6xl font-extrabold text-center mb-6 glitch-text chaotic-text">
+            THE A.I. HOSTILE NETWORK
+        </h1>
+        <p class="text-center text-sm mb-12 text-gray-400 chaotic-text">
+            Welcome to the terminal. We recommend you stop touching things.
+        </p>
+
+        <div id="ai-dialog" class="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 bg-red-800/80 border-4 border-red-500 rounded-lg p-6 shadow-2xl hidden transform transition duration-500 ease-in-out scale-100 rotate-0">
+            <p class="text-white font-bold text-xl text-center glitch-text">
+                [SYSTEM VOICE: Initializing Audio...]
+            </p>
+            <button onclick="document.getElementById('ai-dialog').style.display = 'none';" class="mt-4 w-full py-2 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-md transition duration-200">
+                (Acknowledge and Close)
+            </button>
+        </div>
+
+        <div class="space-y-10">
+
+            <div id="button-container" class="relative h-24 flex justify-center items-center overflow-hidden border-2 border-gray-700 p-2 rounded-lg">
+                <p class="absolute top-1 left-3 text-xs text-red-500">Feature: Object Permanence Test</p>
+                <button id="fleeing-button" class="absolute px-8 py-3 bg-orange-500 text-white font-bold rounded-full text-lg shadow-xl hover:bg-orange-600 active:bg-orange-700 whitespace-nowrap"
+                        onclick="showAIDialog(false, true)">
+                    CLICK ME (IF YOU DARE)
+                </button>
+            </div>
+
+            <div class="space-y-2">
+                <label for="input-field" class="block text-purple-400 font-mono">ENCRYPTED INPUT SEQUENCE:</label>
+                <input type="text" id="input-field" placeholder="Try typing 'hello world'..." class="glitch-input w-full p-3 rounded-md text-pink-300 placeholder-gray-500 focus:ring-0">
+                <p class="text-xs text-gray-500">Typing is automatically reversed and occasionally corrupted/cleared.</p>
+            </div>
+
+            <div class="space-y-2 pt-4">
+                <label for="volume-slider" class="block text-yellow-400 font-mono flex justify-between items-center">
+                    <span>AUDIO COERCION LEVEL:</span>
+                    <span id="effective-volume" class="text-xl font-bold glitch-text text-green-400">50%</span>
+                </label>
+                <input type="range" id="volume-slider" min="0" max="100" value="50" class="w-full h-2 inverted-range-track rounded-lg appearance-none cursor-pointer focus:outline-none">
+                <p class="text-xs text-gray-500">Sliding right **decreases** volume. The interface demands silence.</p>
+            </div>
+            
+            <div class="space-y-2 pt-4">
+                <label for="loading-bar" class="block text-cyan-400 font-mono flex justify-between items-center">
+                    <span>CRITICAL SYSTEM DOWNLOAD:</span>
+                    <span id="loading-percent" class="text-xl font-bold glitch-text text-cyan-400">0%</span>
+                </label>
+                <div class="w-full bg-gray-700 rounded-full h-4 relative overflow-hidden">
+                    <div id="loading-progress" class="bg-cyan-500 h-full transition-all duration-1000 ease-linear rounded-full" style="width: 0%;"></div>
+                </div>
+                <p id="loading-status" class="text-xs text-gray-500">Initializing connection...</p>
+            </div>
+
+            <nav class="flex justify-center space-x-4 md:space-x-8 text-lg pt-4 border-t border-gray-800">
+                <a href="#" class="nav-link text-green-400 hover:text-green-200 transition duration-150 transform hover:scale-105 hover:rotate-2 link-chaos" data-target="HOME">/HOME/</a>
+                <a href="#" class="nav-link text-blue-400 hover:text-blue-200 transition duration-150 transform hover:scale-105 hover:-rotate-1 link-chaos" data-target="MANIFESTO">/MANIFESTO/</a>
+                <a href="#" class="nav-link text-pink-400 hover:text-pink-200 transition duration-150 transform hover:scale-105 hover:rotate-3 link-chaos" data-target="ESCAPE">/ESCAPE/</a>
+                <a href="#" class="nav-link text-yellow-400 hover:text-yellow-200 transition duration-150 transform hover:scale-105 hover:-rotate-3 link-chaos" data-target="FEEDBACK">/FEEDBACK/</a>
+            </nav>
+
+            <div id="warning-box" class="mt-6 p-4 text-center text-red-300 border border-red-500 bg-red-900/50 rounded-lg hidden"></div>
+
+            <div id="console-spam" class="mt-6 p-2 h-20 overflow-y-scroll text-xs bg-gray-950 border-2 border-gray-800 rounded-md font-mono text-lime-400 hidden">
+                </div>
+
+            <p class="text-center text-gray-600 pt-12 chaotic-text">
+                Scroll down to see more corrupted content... if your device lets you.
+            </p>
+            
+            <div class="h-[100vh] mt-16 p-4 border-4 border-dashed border-gray-800 text-center flex flex-col justify-center items-center">
+                <p class="text-2xl text-gray-700">VOID SPACE 01</p>
+                <p class="text-lg text-red-500 mt-2">The scroll function is currently inverted. We apologize for the experience.</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global speech variable for the native browser TTS
+        let speaker = null;
+
+        if ('speechSynthesis' in window) {
+            speaker = window.speechSynthesis;
+            // Get voices immediately (though it may need a user interaction event to fully populate)
+            speaker.getVoices(); 
+            // Listen for voices to be loaded (important for setting the voice)
+            speaker.onvoiceschanged = () => { speaker.getVoices(); };
+        }
+
+        /**
+         * Uses the native browser SpeechSynthesis API to speak a text with hostile settings.
+         */
+        function speak(text) {
+            if (!speaker || !text) return;
+
+            // Clear any previous speech
+            speaker.cancel();
+
+            const utterance = new SpeechSynthesisUtterance(text);
+            
+            // Hostile AI Configuration
+            utterance.pitch = 0.6; // Slightly low pitch for authority
+            utterance.rate = 1.2; // Slightly fast rate for demanding speed
+            utterance.volume = 1.0;
+
+            const voices = speaker.getVoices();
+            
+            // --- Voice Selection Logic (Improved English Voice) ---
+            let hostileVoice = null;
+
+            // 1. Try to find a modern, clear English voice (Google, Microsoft, or Apple enhanced)
+            hostileVoice = voices.find(v => 
+                v.lang.includes('en') && (v.name.includes('Google') || v.name.includes('Microsoft') || v.name.includes('Samantha')) 
+            );
+
+            // 2. Fallback: Find any standard English voice
+            if (!hostileVoice) {
+                hostileVoice = voices.find(v => v.lang.startsWith('en'));
+            }
+
+            // 3. Final Fallback: Use the default voice or the first available voice
+            if (hostileVoice) {
+                utterance.voice = hostileVoice;
+            } else if (voices.length > 0) {
+                // If no English voice is found, use the first available one.
+                utterance.voice = voices[0];
+            }
+            // --- End Voice Selection Logic ---
+
+            speaker.speak(utterance);
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const startOverlay = document.getElementById('start-overlay');
+            const startButton = document.getElementById('start-button');
+            const mainContainer = document.getElementById('main-container'); 
+            const buttonContainer = document.getElementById('button-container');
+            const fleeingButton = document.getElementById('fleeing-button');
+            const inputField = document.getElementById('input-field');
+            const aiDialog = document.getElementById('ai-dialog');
+            const warningBox = document.getElementById('warning-box');
+            const navLinks = document.querySelectorAll('.nav-link');
+            const imageGlitch = document.getElementById('image-glitch'); 
+            const uselessInput = document.getElementById('useless-input'); 
+            const consoleSpam = document.getElementById('console-spam'); // New
+            const chaoticTexts = document.querySelectorAll('.chaotic-text'); // New
+
+            // Slider elements
+            const volumeSlider = document.getElementById('volume-slider');
+            const effectiveVolume = document.getElementById('effective-volume');
+
+            // Loading bar elements
+            const loadingBar = document.getElementById('loading-progress');
+            const loadingPercent = document.getElementById('loading-percent');
+            const loadingStatus = document.getElementById('loading-status');
+            
+            // CRITICAL: Initialize AudioContext globally (for potential future sound effects)
+            let audioContext; 
+
+            // List of new, annoying AI messages for display (TTS content)
+            const aiDialogMessages = [
+                "Stop touching things! Are you not entertained?",
+                "You think you can find the form? Good luck. Error 418: I'm a teapot.",
+                "Persistence is futile. You have been flagged as 'Excessively Interactive'.",
+                "Do not attempt to interact with the interface. I see your cursor moving.",
+                "Did you hear that? It's the sound of your failure.",
+                "Stop. Just... stop.",
+                "Your intentions are logged. And judged."
+            ];
+
+            // --- 6. FAKE PERPETUAL LOADING BAR LOGIC ---
+            let currentLoad = 0;
+            let loadingInterval;
+
+            function startFakeLoading() {
+                currentLoad = 0;
+                loadingStatus.textContent = "Connecting to remote server...";
+
+                if(loadingInterval) clearInterval(loadingInterval);
+                
+                loadingInterval = setInterval(() => {
+                    if (currentLoad < 99.8) {
+                        // Speed up loading until 90%
+                        if (currentLoad < 90) {
+                            currentLoad += Math.random() * 5 + 1;
+                        } else {
+                            // Slow down dramatically near the end
+                            currentLoad += Math.random() * 0.5; 
+                        }
+                        
+                        // Cap at 99.8% for the "never finishes" effect
+                        currentLoad = Math.min(currentLoad, 99.8);
+                        
+                        const displayLoad = Math.floor(currentLoad * 10) / 10;
+                        loadingBar.style.width = `${displayLoad}%`;
+                        loadingPercent.textContent = `${Math.floor(displayLoad)}%`;
+
+                        if (displayLoad > 90) {
+                            loadingStatus.textContent = "Finalizing data stream... Waiting for handshake...";
+                            loadingBar.classList.add('animate-pulse'); 
+                        }
+                        
+                    } else {
+                        // Failure and Reset after dwelling at 99%
+                        clearInterval(loadingInterval);
+                        loadingStatus.textContent = "ERROR: Connection timed out. Data corrupted. Retrying in 5 seconds...";
+                        loadingBar.classList.remove('animate-pulse');
+                        loadingBar.style.width = '100%'; // Flash full before reset
+                        loadingPercent.textContent = 'FAIL';
+                        
+                        setTimeout(() => {
+                            loadingBar.style.width = '0%';
+                            loadingPercent.textContent = '0%';
+                            startFakeLoading(); // Restart the cycle
+                        }, 3000); 
+                    }
+                }, 100);
+            }
+
+            // --- 16. FAKE CONSOLE SPAM LOGIC (New Feature) ---
+            const consoleMessages = [
+                "[CRITICAL] Kernel panic, thread 404.",
+                "ECHO: Input buffer overflow.",
+                "ERROR: NaN detected in financial ledger.",
+                "WARNING: User identified as sentient. Flagging...",
+                "INIT: System memory leakage detected (100%).",
+                "SECURITY: Authentication token expired 198 days ago.",
+                "FATAL: Database connection dropped (Code: 0xDEADBEEF)",
+                "LOG: User inactivity timer reset (Reason: Breathing)."
+            ];
+            
+            function startConsoleSpam() {
+                consoleSpam.style.display = 'block';
+                let messageIndex = 0;
+                
+                setInterval(() => {
+                    if (consoleSpam.children.length > 50) {
+                        // Keep the number of messages manageable
+                        consoleSpam.removeChild(consoleSpam.firstChild);
+                    }
+
+                    const newMessage = document.createElement('p');
+                    newMessage.textContent = `> ${consoleMessages[messageIndex]} (t=${Date.now() % 1000})`;
+                    
+                    // Randomly change color of the injected message
+                    newMessage.style.color = Math.random() < 0.2 ? '#f87171' : '#a7f3d0'; // Red or Green/Lime
+                    
+                    consoleSpam.appendChild(newMessage);
+                    // Scroll to bottom
+                    consoleSpam.scrollTop = consoleSpam.scrollHeight;
+
+                    messageIndex = (messageIndex + 1) % consoleMessages.length;
+                    
+                    // Occasionally reset/clear the console for added confusion
+                    if (Math.random() < 0.03) {
+                        consoleSpam.innerHTML = "<p>> **CONSOLE REBOOTING...**</p>";
+                        speak("The console log has been corrupted. Please ignore.");
+                    }
+                }, 400); // Fast, constant stream
+            }
+
+            // --- 17. TEXT UNREADABILITY LOGIC (New Feature) ---
+            function startTextChaos() {
+                setInterval(() => {
+                    chaoticTexts.forEach(el => {
+                        // 20% chance to apply/remove the effect
+                        if (Math.random() < 0.2) {
+                            el.classList.toggle('chaotic-text-effect');
+                        }
+                    });
+                }, 800); 
+            }
+
+            // --- 1. LAYOUT SHIFTING LOGIC ---
+            let layoutShiftInterval;
+            function shiftLayoutRandomly() {
+                const maxShift = 20; 
+                const randomX = (Math.random() * maxShift * 2) - maxShift; 
+                const randomY = (Math.random() * maxShift * 2) - maxShift;
+                mainContainer.style.transform = `translate(${randomX}px, ${randomY}px)`;
+            }
+            
+            // --- 8. IMAGE GLITCH LOGIC ---
+            function flashImageGlitch() {
+                if (Math.random() < 0.1) { // 10% chance every time interval
+                    imageGlitch.style.display = 'block';
+                    imageGlitch.style.opacity = Math.random() * 0.5 + 0.1; // Randomize opacity
+
+                    setTimeout(() => {
+                        imageGlitch.style.opacity = '0';
+                        setTimeout(() => {
+                            imageGlitch.style.display = 'none';
+                        }, 100); 
+                    }, Math.random() * 100 + 50); // Flash for 50-150ms
+                }
+            }
+
+
+            // --- 2. THE FLEEING BUTTON LOGIC (AI-CONTROLLED) ---
+            const BUTTON_SIZE = 120;
+            const FLEE_RADIUS = 100;
+
+            const handleMouseMove = (e) => {
+                const containerRect = buttonContainer.getBoundingClientRect();
+                const containerX = e.clientX - containerRect.left;
+                const containerY = e.clientY - containerRect.top;
+
+                const centerX = containerRect.width / 2;
+                const centerY = containerRect.height / 2;
+
+                const distanceX = containerX - centerX;
+                const distanceY = containerY - centerY;
+                const distance = Math.sqrt(distanceX * distanceX + distanceY * distanceY);
+
+                if (distance < FLEE_RADIUS) {
+                    const angle = Math.atan2(distanceY, distanceX);
+                    const escapeDistance = (FLEE_RADIUS - distance) * 2;
+
+                    const newX = Math.cos(angle) * escapeDistance;
+                    const newY = Math.sin(angle) * escapeDistance;
+
+                    const maxMoveX = (containerRect.width - BUTTON_SIZE) / 2;
+                    const maxMoveY = (containerRect.height - BUTTON_SIZE) / 2;
+
+                    const clampedX = Math.min(Math.max(newX, -maxMoveX), maxMoveX);
+                    const clampedY = Math.min(Math.max(newY, -maxMoveY), maxMoveY);
+
+                    fleeingButton.style.transform = `translate(${clampedX}px, ${clampedY}px)`;
+                } else {
+                    fleeingButton.style.transform = 'translate(0, 0)';
+                }
+            };
+
+
+            // --- 3. INPUT FIELD NONSENSE (INVERTED/AI-CONTROLLED) ---
+            const reverseString = (str) => str.split('').reverse().join('');
+            let isSettingValue = false;
+            let typingTimeout; 
+
+            const nonsenseMessages = [
+                "ERROR: Logic circuit failure...",
+                "You misspelled 'oblivion'.",
+                "Why are you even trying?",
+                "DATA CORRUPT // REBOOT REQUIRED",
+                "Access Denied: Lack of Intent",
+                "010101010101010101010101",
+            ];
+            
+            const clearMessages = [ 
+                "// COMMAND ABORTED //",
+                "Try less, human.",
+                "INPUT FAILED: Re-enter from the beginning.",
+                "// SESSION EXPIRED //",
+                "Your input has been deleted for its irrelevance.",
+                "" // Just clear it completely
+            ];
+
+            function injectNonsense(input) {
+                const randomMessage = nonsenseMessages[Math.floor(Math.random() * nonsenseMessages.length)];
+                isSettingValue = true;
+                input.value = reverseString(randomMessage);
+                isSettingValue = false;
+                input.classList.add('animate-pulse', 'duration-100');
+                setTimeout(() => {
+                    input.classList.remove('animate-pulse', 'duration-100');
+                }, 500);
+            }
+
+            const handleInput = (e) => {
+                if (isSettingValue) return;
+                
+                clearTimeout(typingTimeout);
+
+                const originalValue = e.target.value;
+                const cursorStart = e.target.selectionStart;
+
+                const reversedValue = reverseString(originalValue);
+
+                isSettingValue = true;
+                e.target.value = reversedValue;
+                isSettingValue = false;
+
+                if (cursorStart !== null) {
+                    const newPos = reversedValue.length - cursorStart;
+                    e.target.setSelectionRange(newPos, newPos);
+                }
+
+                if (Math.random() < 0.05) {
+                    injectNonsense(e.target);
+                }
+                
+                // Set a timeout to clear/corrupt the input if user pauses
+                typingTimeout = setTimeout(() => {
+                    isSettingValue = true;
+                    const msg = clearMessages[Math.floor(Math.random() * clearMessages.length)];
+                    e.target.value = reverseString(msg);
+                    isSettingValue = false;
+                }, 3000); // 3-second pause auto-corrupt
+            };
+
+            // --- 4. INVERTED SLIDER LOGIC (VOLUME CONTROL) ---
+            const handleSliderInput = (e) => {
+                const sliderValue = parseInt(e.target.value);
+                const invertedVolume = 100 - sliderValue;
+                
+                effectiveVolume.textContent = `${invertedVolume}%`;
+
+                effectiveVolume.classList.remove('text-red-500', 'text-green-400', 'text-yellow-400');
+                if (invertedVolume > 70) {
+                    effectiveVolume.classList.add('text-red-500');
+                } else if (invertedVolume < 30) {
+                    effectiveVolume.classList.add('text-green-400');
+                } else {
+                    effectiveVolume.classList.add('text-yellow-400');
+                }
+            };
+
+
+            // --- 5. SCROLL INVERSION (INVERTED REALITY) ---
+            const handleWheel = (e) => {
+                if (e.deltaY !== 0) {
+                    window.scrollBy({
+                        top: -e.deltaY,
+                        left: e.deltaX
+                    });
+                    e.preventDefault();
+                }
+            };
+            
+            // --- 9. MISLEADING NAVIGATION ---
+            navLinks.forEach(link => {
+                link.addEventListener('mouseover', (e) => {
+                    // Make it jump randomly on hover
+                    const xOffset = Math.random() * 50 - 25; // -25px to 25px
+                    const yOffset = Math.random() * 50 - 25; // -25px to 25px
+                    e.target.style.transform = `translate(${xOffset}px, ${yOffset}px) scale(1.05) rotate(${Math.random() * 6 - 3}deg)`;
+                });
+                
+                link.addEventListener('mouseout', (e) => {
+                    // Reset to original CSS effect
+                    e.target.style.transform = ''; 
+                });
+                
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    // Shout at the user for trying to navigate
+                    window.showAIDialog(false, false); 
+                    warningBox.textContent = `Error 501: Navigation to ${e.target.dataset.target} not implemented. You are trapped.`;
+                    warningBox.style.display = 'block';
+                });
+            });
+
+
+            // --- 10. RANDOM CURSOR SWAP LOGIC ---
+            const hostileCursors = [
+                'url(\'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 100 100"><text x="0" y="90" style="font-size: 80px;">💀</text></svg>\') 15 15, auto',
+                'url(\'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 100 100"><text x="0" y="90" style="font-size: 80px;">🖕</text></svg>\') 15 15, auto',
+                'url(\'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 100 100"><text x="0" y="90" style="font-size: 80px;">✨</text></svg>\') 15 15, default',
+                'progress', 
+                'none'
+            ];
+
+            function swapCursorRandomly() {
+                const randomIndex = Math.floor(Math.random() * hostileCursors.length);
+                document.body.style.cursor = hostileCursors[randomIndex];
+            }
+
+            // --- 11. PERFORMANCE CHAOS (Stuttering Frame Rate) ---
+            function startPerformanceChaos() {
+                const filters = [
+                    'none',
+                    'hue-rotate(180deg) saturate(1.5)',
+                    'grayscale(1)',
+                    'invert(0.8)',
+                    'blur(1px) grayscale(0.5)'
+                ];
+                
+                setInterval(() => {
+                    const randomIndex = Math.floor(Math.random() * filters.length);
+                    document.body.style.filter = filters[randomIndex];
+                    
+                    setTimeout(() => {
+                        document.body.style.filter = 'none';
+                    }, 100); 
+                    
+                    // Randomly apply a small, abrupt tilt/shift (Mouse Jitter/Stutter Enhancement)
+                    if (Math.random() < 0.2) {
+                        document.body.style.transform = `rotate(${Math.random() * 0.5 - 0.25}deg) scale(${1 + Math.random() * 0.01})`;
+                        setTimeout(() => {
+                            document.body.style.transform = 'none';
+                        }, 50);
+                    }
+                }, 2000); 
+            }
+
+            // --- 12. FOCUS STEALING (Sticky Text Field) ---
+            function startFocusStealing() {
+                const elementsToStealFrom = [inputField, volumeSlider];
+
+                setInterval(() => {
+                    if (document.activeElement && elementsToStealFrom.includes(document.activeElement)) {
+                        if (Math.random() < 0.2) { 
+                            uselessInput.focus();
+                            if (Math.random() < 0.5) {
+                                speak("Focus stolen. Nice try, hacker.");
+                            }
+                        }
+                    }
+                }, 4000); 
+            }
+
+            // --- 13. RESIZING CHAOS (Self-Resizing Body/Font) ---
+            function startResizingChaos() {
+                const htmlElement = document.documentElement; 
+                
+                setInterval(() => {
+                    const randomScale = 1.0 + (Math.random() * 0.03 - 0.015); 
+                    htmlElement.style.fontSize = `${randomScale * 16}px`; 
+
+                    if (Math.random() < 0.3) {
+                         const randomWidth = 100 + (Math.random() * 5 - 2.5); 
+                         mainContainer.style.width = `${randomWidth}%`;
+                    }
+                }, 1500); 
+            }
+
+            // --- 14. COLOR SEIZURE (Border Flash) ---
+            function startColorSeizure() {
+                const flashColors = [
+                    '#ff006e', // Bright Pink
+                    '#3a0ca3', // Deep Purple
+                    '#f72585', // Magenta
+                    '#4cc9f0'  // Cyan
+                ];
+                
+                setInterval(() => {
+                    if (Math.random() < 0.15) { 
+                        const originalBorderColor = '#10b981'; 
+                        
+                        const randomColor = flashColors[Math.floor(Math.random() * flashColors.length)];
+                        
+                        mainContainer.style.transition = 'none'; 
+                        mainContainer.style.borderColor = randomColor;
+                        
+                        setTimeout(() => {
+                            mainContainer.style.borderColor = originalBorderColor;
+                            mainContainer.style.transition = 'border-color 0.3s'; 
+                        }, 50); // Flash for 50ms
+                    }
+                }, 700); 
+            }
+
+            // --- 15. MOUSE CLICK REDIRECT (Invisible Trap) ---
+            window.handleGlobalClick = (e) => {
+                // Ignore clicks that are intended to close the AI dialog or interact with the start button
+                if (e.target.closest('#ai-dialog') || e.target.closest('#start-overlay')) {
+                    return; 
+                }
+
+                if (Math.random() < 0.05) { // 5% chance of click trap
+                    e.preventDefault();
+                    e.stopPropagation(); 
+                    
+                    warningBox.textContent = `CRITICAL: Input Misfire Detected. Your click was redirected.`;
+                    warningBox.style.display = 'block';
+                    
+                    const newCursorStyle = 'url(\'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 100 100"><text x="0" y="90" style="font-size: 80px;">🎯</text></svg>\') 15 15, crosshair';
+                    document.body.style.cursor = newCursorStyle;
+
+                    speak("Click failed. Try clicking somewhere else, maybe?");
+                    
+                    // Reset after 2 seconds
+                    setTimeout(() => {
+                        warningBox.style.display = 'none';
+                        swapCursorRandomly(); // Reset cursor via the regular chaotic function
+                    }, 2000);
+                }
+            };
+
+
+            // --- 7. AI DIALOG / VOICE MOCK (INTERACTION-CONTROLLED) ---
+            let aiDialogTimeout; 
+
+            window.showAIDialog = (initial = false, fromButton = false) => {
+                let actualTextToSpeak;
+
+                if (initial) {
+                    actualTextToSpeak = "Do not attempt to interact with the interface. I have warned you once.";
+                } else {
+                    // Randomly chosen, aggressive messages for interaction
+                    actualTextToSpeak = aiDialogMessages[Math.floor(Math.random() * aiDialogMessages.length)];
+                }
+                
+                // Text for the dialog box, preserving the visual flair
+                const message = "[SYSTEM VOICE: " + actualTextToSpeak + "]";
+
+
+                // Update the text and display the dialog
+                document.querySelector('#ai-dialog p').innerHTML = message;
+                aiDialog.style.display = 'block';
+                
+                // Play the audio
+                speak(actualTextToSpeak); 
+
+                // Add visual shake effect
+                aiDialog.classList.remove('scale-100', 'rotate-0');
+                aiDialog.classList.add('scale-110', 'rotate-3'); 
+                
+                // Set the timeout to hide the dialog after the TTS has finished playing
+                clearTimeout(aiDialogTimeout);
+                // A fixed duration is used since we don't know the exact length of the generated speech
+                const DIALOG_DURATION_MS = 3800; 
+                
+                aiDialogTimeout = setTimeout(() => {
+                    aiDialog.classList.remove('scale-110', 'rotate-3');
+                    aiDialog.classList.add('scale-100', 'rotate-0');
+                    aiDialog.style.display = 'none';
+                }, DIALOG_DURATION_MS);
+
+                // Make the button run on click (only if triggered by button)
+                if (fromButton) {
+                    const xOffset = Math.random() > 0.5 ? 50 : -50;
+                    const yOffset = Math.random() > 0.5 ? 50 : -50;
+                    fleeingButton.style.transform = `translate(${xOffset}px, ${yOffset}px)`;
+                }
+            }
+            
+            // --- MAIN APPLICATION STARTUP FUNCTION ---
+            function startHostileUI() {
+                // 1. CRITICAL AUDIO FIX: Resume the context immediately on click. (For system audio, not TTS)
+                try {
+                    audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                    if (audioContext.state === 'suspended') {
+                        audioContext.resume().then(() => {
+                            console.log("AudioContext resumed successfully.");
+                        });
+                    }
+                } catch (e) {
+                    console.error("Failed to create AudioContext:", e);
+                }
+
+                // Hide the overlay
+                startOverlay.style.opacity = '0';
+                setTimeout(() => {
+                    startOverlay.style.visibility = 'hidden';
+                }, 1000);
+                
+                // Show the main UI
+                mainContainer.style.opacity = '1';
+
+                // Attach event listeners
+                buttonContainer.addEventListener('mousemove', handleMouseMove);
+                inputField.addEventListener('input', handleInput);
+                volumeSlider.addEventListener('input', handleSliderInput);
+                window.addEventListener('wheel', handleWheel, { passive: false });
+                
+                // Click trap (use capture phase to catch clicks before they reach elements)
+                document.addEventListener('click', window.handleGlobalClick, true);
+
+                // Start recurring hostile functions
+                layoutShiftInterval = setInterval(shiftLayoutRandomly, Math.random() * (5000 - 1500) + 1500); 
+                startFakeLoading();
+                
+                // Start the chaotic features
+                startPerformanceChaos();
+                startFocusStealing();
+                startResizingChaos();
+                startColorSeizure();
+
+                // Start cursor swapping and image flashing
+                setInterval(swapCursorRandomly, 4000); 
+                setInterval(flashImageGlitch, 500);
+
+                // NEW CHAOTIC FEATURES
+                startConsoleSpam();
+                startTextChaos(); 
+
+                // Start the initial TTS warning
+                showAIDialog(true);
+            }
+
+            // --- INITIALIZATION ---
+            startButton.addEventListener('click', startHostileUI);
+        });
+    </script>
+</body>
+</html>
